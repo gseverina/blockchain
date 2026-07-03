@@ -1,3 +1,4 @@
+import hashlib
 from dataclasses import dataclass
 from typing import Any
 
@@ -22,3 +23,6 @@ class Block:
             raise ValueError("el bloque génesis (index=0) no puede tener previous_block")
         if not is_genesis and not has_previous:
             raise ValueError("todo bloque con index > 0 debe tener previous_block")
+
+    def hash(self) -> str:
+        return hashlib.sha256(repr(self).encode("utf-8")).hexdigest()
