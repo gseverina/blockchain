@@ -18,7 +18,7 @@ def test_add_block_incrementa_len():
 def test_preserva_orden_de_insercion():
     chain = Blockchain()
     genesis = Block(data="genesis", index=0)
-    second = Block(data="segundo", index=1, previous_block=genesis)
+    second = Block(data="segundo", index=1, previous_hash=genesis.hash())
     chain.add_block(genesis)
     chain.add_block(second)
     assert chain[0] is genesis
@@ -28,7 +28,7 @@ def test_preserva_orden_de_insercion():
 def test_iterar_recorre_todos_en_orden():
     chain = Blockchain()
     genesis = Block(data="genesis", index=0)
-    second = Block(data="segundo", index=1, previous_block=genesis)
+    second = Block(data="segundo", index=1, previous_hash=genesis.hash())
     chain.add_block(genesis)
     chain.add_block(second)
     assert list(chain) == [genesis, second]

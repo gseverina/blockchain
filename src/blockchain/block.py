@@ -10,19 +10,19 @@ class Block:
 
     data: Any
     index: int
-    previous_block: "Block | None" = None
+    previous_hash: str | None = None
 
     def __post_init__(self) -> None:
         if self.index < 0:
             raise ValueError("index no puede ser negativo")
 
         is_genesis = self.index == 0
-        has_previous = self.previous_block is not None
+        has_previous = self.previous_hash is not None
 
         if is_genesis and has_previous:
-            raise ValueError("el bloque génesis (index=0) no puede tener previous_block")
+            raise ValueError("el bloque génesis (index=0) no puede tener previous_hash")
         if not is_genesis and not has_previous:
-            raise ValueError("todo bloque con index > 0 debe tener previous_block")
+            raise ValueError("todo bloque con index > 0 debe tener previous_hash")
 
     def hash(self) -> str:
         return hashlib.sha256(repr(self).encode("utf-8")).hexdigest()
