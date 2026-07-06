@@ -4,8 +4,8 @@ from blockchain.block import Block
 
 
 class Blockchain:
-    """Administra una colección ordenada de `Block`. No valida bloques,
-    no calcula hashes, no mina ni persiste."""
+    """Administra una colección ordenada de `Block` y verifica la
+    integridad del encadenamiento mediante hashes. No mina ni persiste."""
 
     def __init__(self) -> None:
         self._blocks: list[Block] = []
@@ -26,3 +26,9 @@ class Blockchain:
 
     def __iter__(self) -> Iterator[Block]:
         return iter(self._blocks)
+
+    def is_valid(self) -> bool:
+        for i in range(1, len(self._blocks)):
+            if self._blocks[i].previous_hash != self._blocks[i - 1].hash():
+                return False
+        return True

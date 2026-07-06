@@ -44,3 +44,46 @@ def test_acceso_fuera_de_rango_levanta_index_error():
     chain = Blockchain()
     with pytest.raises(IndexError):
         chain[0]
+
+
+def test_blockchain_vacia_es_valida():
+    chain = Blockchain()
+    assert chain.is_valid() is True
+
+
+def test_blockchain_solo_genesis_es_valida():
+    chain = Blockchain()
+    chain.add_block(Block(data="genesis", index=0))
+    assert chain.is_valid() is True
+
+
+def test_blockchain_bien_encadenada_es_valida():
+    chain = Blockchain()
+    genesis = Block(data="genesis", index=0)
+    chain.add_block(genesis)
+    previous = genesis
+    for i in range(1, 4):
+        block = Block(data=f"bloque {i}", index=i, previous_hash=previous.hash())
+        chain.add_block(block)
+        previous = block
+    assert chain.is_valid() is True
+
+
+def test_blockchain_con_previous_hash_incorrecto_es_invalida():
+    chain = Blockchain()
+    genesis = Block(data="genesis", index=0)
+    chain.add_block(genesis)
+    chain.add_block(Block(data="segundo", index=1, previous_hash=genesis.hash()))
+    chain.add_block(Block(data="tercero", index=2, previous_hash="hash inventado"))
+    assert chain.is_valid() is False
+
+
+def test_is_valid_no_modifica_la_blockchain():
+    chain = Blockchain()
+    genesis = Block(data="genesis", index=0)
+    chain.add_block(genesis)
+    chain.add_block(Block(data="segundo", index=1, previous_hash=genesis.hash()))
+    before = list(chain)
+    chain.is_valid()
+    after = list(chain)
+    assert before == after
