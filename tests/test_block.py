@@ -8,13 +8,13 @@ from blockchain.block import Block
 def test_crear_bloque_genesis():
     block = Block(data="genesis", index=0)
     assert block.index == 0
-    assert block.previous_block is None
+    assert block.previous_hash is None
 
 
-def test_crear_bloque_con_previous():
+def test_crear_bloque_con_previous_hash():
     genesis = Block(data="genesis", index=0)
-    block = Block(data="segundo", index=1, previous_block=genesis)
-    assert block.previous_block is genesis
+    block = Block(data="segundo", index=1, previous_hash=genesis.hash())
+    assert block.previous_hash == genesis.hash()
 
 
 def test_acceso_a_atributos():
@@ -34,15 +34,15 @@ def test_index_negativo_rechazado():
         Block(data="x", index=-1)
 
 
-def test_index_mayor_a_cero_sin_previous_rechazado():
+def test_index_mayor_a_cero_sin_previous_hash_rechazado():
     with pytest.raises(ValueError):
         Block(data="x", index=1)
 
 
-def test_genesis_con_previous_rechazado():
+def test_genesis_con_previous_hash_rechazado():
     genesis = Block(data="genesis", index=0)
     with pytest.raises(ValueError):
-        Block(data="x", index=0, previous_block=genesis)
+        Block(data="x", index=0, previous_hash=genesis.hash())
 
 
 def test_hash_es_hex_de_64_caracteres():
@@ -66,22 +66,22 @@ def test_hash_cambia_si_cambia_data():
 
 def test_hash_cambia_si_cambia_index():
     genesis = Block(data="x", index=0)
-    a = Block(data="y", index=1, previous_block=genesis)
-    b = Block(data="y", index=2, previous_block=genesis)
+    a = Block(data="y", index=1, previous_hash=genesis.hash())
+    b = Block(data="y", index=2, previous_hash=genesis.hash())
     assert a.hash() != b.hash()
 
 
-def test_hash_cambia_si_cambia_previous_block():
+def test_hash_cambia_si_cambia_previous_hash():
     genesis_a = Block(data="genesis a", index=0)
     genesis_b = Block(data="genesis b", index=0)
-    a = Block(data="segundo", index=1, previous_block=genesis_a)
-    b = Block(data="segundo", index=1, previous_block=genesis_b)
+    a = Block(data="segundo", index=1, previous_hash=genesis_a.hash())
+    b = Block(data="segundo", index=1, previous_hash=genesis_b.hash())
     assert a.hash() != b.hash()
 
 
 def test_hash_no_modifica_el_bloque():
     block = Block(data="genesis", index=0)
-    before = (block.data, block.index, block.previous_block)
+    before = (block.data, block.index, block.previous_hash)
     block.hash()
-    after = (block.data, block.index, block.previous_block)
+    after = (block.data, block.index, block.previous_hash)
     assert before == after
