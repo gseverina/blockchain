@@ -1,9 +1,10 @@
-from dataclasses import FrozenInstanceError
+from dataclasses import FrozenInstanceError, replace
 from decimal import Decimal
 
 import pytest
 
 from blockchain.transaction import Transaction
+from blockchain.wallet import Wallet
 
 
 def test_crear_transaccion_valida():
@@ -54,3 +55,50 @@ def test_recipient_vacio_rechazado():
 def test_sender_igual_a_recipient_rechazado():
     with pytest.raises(ValueError):
         Transaction(sender="alice", recipient="alice", amount=Decimal("10"))
+
+
+def test_transaccion_sin_firmar_no_verifica():
+    tx = Transaction(sender="alice", recipient="bob", amount=Decimal("10"))
+    alice = Wallet(identifier="alice")
+    assert tx.verify(alice.public_key) is False
+
+
+def test_transaccion_firmada_verifica_con_public_key_correcta():
+    alice = Wallet(identifier="alice")
+    tx = Transaction(sender="alice", recipient="bob", amount=Decimal("10"))
+    signed = alice.sign(tx)
+    assert signed.verify(alice.public_key) is True
+
+
+def test_transaccion_firmada_no_verifica_con_otra_public_key():
+    alice = Wallet(identifier="alice")
+    otra = Wallet(identifier="mallory")
+    tx = Transaction(sender="alice", recipient="bob", amount=Decimal("10"))
+    signed = alice.sign(tx)
+    assert signed.verify(otra.public_key) is False
+
+
+def test_transaccion_modificada_deja_de_verificar():
+    alice = Wallet(identifier="alice")
+    tx = Transaction(sender="alice", recipient="bob", amount=Decimal("10"))
+    signed = alice.sign(tx)
+    tampered = replace(signed, amount=Decimal("999"))
+    assert tampered.verify(alice.public_key) is False
+
+
+def test_firma_invalida_no_verifica():
+    alice = Wallet(identifier="alice")
+    tx = Transaction(sender="alice", recipient="bob", amount=Decimal("10"))
+    signed = alice.sign(tx)
+    corrupted = replace(signed, signature="deadbeef")
+    assert corrupted.verify(alice.public_key) is False
+
+
+def test_verify_no_modifica_la_transaccion():
+    alice = Wallet(identifier="alice")
+    tx = Transaction(sender="alice", recipient="bob", amount=Decimal("10"))
+    signed = alice.sign(tx)
+    before = (signed.sender, signed.recipient, signed.amount, signed.signature)
+    signed.verify(alice.public_key)
+    after = (signed.sender, signed.recipient, signed.amount, signed.signature)
+    assert before == after
