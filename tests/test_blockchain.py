@@ -132,3 +132,58 @@ def test_add_pending_transaction_no_afecta_los_bloques():
     chain = Blockchain()
     chain.add_pending_transaction(make_transaction())
     assert len(chain) == 0
+
+
+def test_create_block_en_blockchain_vacia_crea_genesis():
+    chain = Blockchain()
+    block = chain.create_block()
+    assert block.index == 0
+    assert block.previous_hash is None
+    assert len(chain) == 1
+
+
+def test_create_block_encadena_correctamente():
+    chain = Blockchain()
+    genesis = chain.create_block()
+    second = chain.create_block()
+    assert second.index == 1
+    assert second.previous_hash == genesis.hash()
+
+
+def test_create_block_incluye_transacciones_pendientes():
+    chain = Blockchain()
+    tx1 = make_transaction(amount="1")
+    tx2 = make_transaction(amount="2")
+    chain.add_pending_transaction(tx1)
+    chain.add_pending_transaction(tx2)
+    block = chain.create_block()
+    assert block.transactions == (tx1, tx2)
+
+
+def test_create_block_vacia_las_pendientes():
+    chain = Blockchain()
+    chain.add_pending_transaction(make_transaction())
+    chain.create_block()
+    assert chain.pending_transactions == ()
+
+
+def test_create_block_devuelve_el_bloque_agregado():
+    chain = Blockchain()
+    block = chain.create_block()
+    assert chain[-1] is block
+
+
+def test_create_block_sin_pendientes_crea_bloque_vacio():
+    chain = Blockchain()
+    block = chain.create_block()
+    assert block.transactions == ()
+
+
+def test_create_block_sucesivos_mantienen_cadena_valida():
+    chain = Blockchain()
+    chain.create_block()
+    chain.add_pending_transaction(make_transaction())
+    chain.create_block()
+    chain.add_pending_transaction(make_transaction(amount="2"))
+    chain.create_block()
+    assert chain.is_valid() is True
