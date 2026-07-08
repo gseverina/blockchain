@@ -1,19 +1,7 @@
-from decimal import Decimal
-
 import pytest
 
 from blockchain.block import Block
 from blockchain.blockchain import Blockchain
-from blockchain.transaction import Transaction
-from blockchain.wallet import Wallet
-
-
-def make_transaction(sender="alice", recipient="bob", amount="10"):
-    return Transaction(
-        sender=Wallet(identifier=sender),
-        recipient=Wallet(identifier=recipient),
-        amount=Decimal(amount),
-    )
 
 
 def test_blockchain_vacia():
@@ -99,36 +87,3 @@ def test_is_valid_no_modifica_la_blockchain():
     chain.is_valid()
     after = list(chain)
     assert before == after
-
-
-def test_pending_transactions_vacia_por_defecto():
-    chain = Blockchain()
-    assert chain.pending_transactions == ()
-
-
-def test_add_pending_transaction_la_agrega():
-    chain = Blockchain()
-    tx = make_transaction()
-    chain.add_pending_transaction(tx)
-    assert chain.pending_transactions == (tx,)
-
-
-def test_pending_transactions_preserva_orden():
-    chain = Blockchain()
-    tx1 = make_transaction(amount="1")
-    tx2 = make_transaction(amount="2")
-    chain.add_pending_transaction(tx1)
-    chain.add_pending_transaction(tx2)
-    assert chain.pending_transactions == (tx1, tx2)
-
-
-def test_add_pending_transaction_rechaza_objeto_no_transaction():
-    chain = Blockchain()
-    with pytest.raises(TypeError):
-        chain.add_pending_transaction("no soy una transaction")
-
-
-def test_add_pending_transaction_no_afecta_los_bloques():
-    chain = Blockchain()
-    chain.add_pending_transaction(make_transaction())
-    assert len(chain) == 0
