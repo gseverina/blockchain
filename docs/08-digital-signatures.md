@@ -138,3 +138,30 @@ No será criptográficamente seguro, pero reproducirá el mismo flujo conceptual
 
 En clases posteriores compararemos esta implementación educativa con la utilizada por Bitcoin.
 
+---
+
+# Aclaraciones sobre la implementación
+
+## ¿Por qué un hash no reemplaza una firma digital?
+
+Un hash (Clase 3) depende únicamente del contenido: cualquiera puede calcular `sha256(contenido)` sin necesidad de poseer ninguna clave. Sirve para detectar modificaciones, pero no para demostrar quién produjo ese contenido. Una firma, en cambio, solo puede generarse con una clave privada — por eso agrega autenticidad, algo que un hash por sí solo no puede ofrecer.
+
+## Integridad vs. autenticidad
+
+- **Integridad**: el contenido no fue modificado (esto ya lo resuelve un hash).
+- **Autenticidad**: el contenido fue efectivamente producido por quien dice haberlo producido (esto requiere una firma, no alcanza con un hash).
+
+Una firma digital bien construida aporta ambas propiedades a la vez: si el contenido cambia, la firma deja de coincidir (integridad); y solo el dueño de la clave privada pudo haberla generado (autenticidad).
+
+## ¿Por qué cualquiera puede verificar una firma?
+
+Porque la verificación usa la clave **pública**, que por definición puede compartirse libremente. Verificar no requiere ningún secreto — solo saber cuál es la clave pública del firmante.
+
+## ¿Por qué solo el dueño de la clave privada puede generarla?
+
+Porque la firma se calcula **a partir de la clave privada**, nunca de la pública. Si el cálculo usara la clave pública, cualquiera que la conociera (es decir, cualquiera) podría fabricar firmas válidas — dejando de tener sentido el concepto de "autorización".
+
+## Nota sobre `public_key = sha256(private_key)`
+
+En este curso derivamos la clave pública aplicando SHA-256 sobre la clave privada, únicamente para tener una relación unidireccional simple (conocer la pública no permite reconstruir la privada) sin depender de bibliotecas externas. **Esto no es cómo funciona una blockchain real**: Bitcoin y Ethereum derivan la clave pública a partir de la privada mediante operaciones sobre curvas elípticas (ECDSA/secp256k1), no aplicando un hash. La relación matemática es distinta y mucho más compleja — la simplificación de este curso solo preserva la propiedad de "unidireccionalidad", no el mecanismo real.
+
