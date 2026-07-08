@@ -32,6 +32,16 @@ class Blockchain:
     def pending_transactions(self) -> tuple[Transaction, ...]:
         return tuple(self._pending_transactions)
 
+    def create_block(self) -> Block:
+        transactions = tuple(self._pending_transactions)
+        index = len(self._blocks)
+        previous_hash = self._blocks[-1].hash() if self._blocks else None
+
+        new_block = Block(transactions=transactions, index=index, previous_hash=previous_hash)
+        self.add_block(new_block)
+        self._pending_transactions = []
+        return new_block
+
     def __len__(self) -> int:
         return len(self._blocks)
 
