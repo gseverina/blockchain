@@ -1,26 +1,18 @@
 import hashlib
 from dataclasses import dataclass
-
-from blockchain.transaction import Transaction
+from typing import Any
 
 
 @dataclass(frozen=True)
 class Block:
-    """Unidad básica de la blockchain: agrupa transacciones, conoce su posición
-    y el hash del bloque anterior. Conceptualmente inmutable."""
+    """Unidad básica de la blockchain: almacena datos, conoce su posición
+    y mantiene una referencia al bloque anterior. Conceptualmente inmutable."""
 
-    transactions: tuple[Transaction, ...]
+    data: Any
     index: int
     previous_hash: str | None = None
 
     def __post_init__(self) -> None:
-        object.__setattr__(self, "transactions", tuple(self.transactions))
-        for tx in self.transactions:
-            if not isinstance(tx, Transaction):
-                raise TypeError(
-                    f"transactions debe contener Transaction, se recibió {type(tx).__name__}"
-                )
-
         if self.index < 0:
             raise ValueError("index no puede ser negativo")
 
