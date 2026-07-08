@@ -1,6 +1,13 @@
 import hashlib
 from dataclasses import dataclass
 
+# Marcador explícito a nivel de API, no solo en docstrings: este esquema NO
+# es criptográficamente seguro y NO debe reutilizarse fuera de este curso.
+# `Signature.revealed_key` contiene literalmente la private_key del firmante
+# — ver docstring de la clase y "Aclaraciones sobre la implementación" en
+# docs/08-digital-signatures.md para la justificación de esta limitación.
+INSECURE_EDUCATIONAL_SCHEME = True
+
 
 @dataclass(frozen=True)
 class Signature:
@@ -14,7 +21,7 @@ class Signature:
     asimétrica real, explícitamente fuera de alcance en este curso. Ver
     "Aclaraciones sobre la implementación" en docs/08-digital-signatures.md.
 
-    No usar este esquema fuera de este curso.
+    No usar este esquema fuera de este curso — ver INSECURE_EDUCATIONAL_SCHEME.
     """
 
     revealed_key: str
