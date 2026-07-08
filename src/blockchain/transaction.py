@@ -1,6 +1,7 @@
-import hashlib
 from dataclasses import dataclass
 from decimal import Decimal
+
+from blockchain.signature import Signature
 
 
 @dataclass(frozen=True)
@@ -10,7 +11,7 @@ class Transaction:
     sender: str
     recipient: str
     amount: Decimal
-    signature: str | None = None
+    signature: Signature | None = None
 
     def __post_init__(self) -> None:
         if not self.sender.strip():
@@ -21,26 +22,18 @@ class Transaction:
             raise ValueError("sender y recipient no pueden ser el mismo participante")
         if self.amount <= 0:
             raise ValueError("amount debe ser positivo")
+        if self.signature is not None and not isinstance(self.signature, Signature):
+            raise TypeError(
+                f"signature debe ser Signature o None, se recibió {type(self.signature).__name__}"
+            )
 
     def signing_payload(self) -> str:
-        """Representación estable del contenido a firmar/verificar.
-        Única fuente de verdad compartida entre Wallet.sign() y verify()."""
+        """Representación canónica del contenido firmado — la única fuente
+        de verdad compartida entre Wallet.sign() y Transaction.verify()."""
         content = (self.sender, self.recipient, self.amount)
         return repr(content)
 
     def verify(self, public_key: str) -> bool:
-        """Simplificación educativa: la firma revela la private_key usada
-        para producirla. Se verifica que esa clave revelada corresponda al
-        `public_key` publicado (commitment sha256) y que efectivamente haya
-        producido el hash de contenido almacenado en la firma. No es segura
-        para reutilización de clave (ver docs/08-digital-signatures.md)."""
         if self.signature is None:
             return False
-        try:
-            revealed_key, content_hash = self.signature.split(":", 1)
-        except ValueError:
-            return False
-        if hashlib.sha256(revealed_key.encode()).hexdigest() != public_key:
-            return False
-        expected_hash = hashlib.sha256((revealed_key + self.signing_payload()).encode()).hexdigest()
-        return expected_hash == content_hash
+        return self.signature.verify(public_key, self.signing_payload())

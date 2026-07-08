@@ -2,6 +2,7 @@ import hashlib
 import secrets
 from dataclasses import dataclass, field, replace
 
+from blockchain.signature import Signature
 from blockchain.transaction import Transaction
 
 
@@ -25,14 +26,10 @@ class Wallet:
         object.__setattr__(self, "public_key", hashlib.sha256(self.private_key.encode()).hexdigest())
 
     def sign(self, transaction: Transaction) -> Transaction:
-        """La firma depende exclusivamente de private_key, nunca de public_key.
-        Esquema simplificado: revela la private_key dentro de la propia firma
-        (`private_key:hash(private_key + contenido)`), verificable por
-        cualquiera contra el commitment `public_key` sin necesidad de conocer
-        la clave privada de antemano. No es reutilizable de forma segura una
-        vez revelada (ver docs/08-digital-signatures.md)."""
+        """Delega el cálculo criptográfico en Signature.create() — Wallet no
+        conoce el formato interno de la firma, solo que Signature sabe
+        producirla a partir de private_key y un payload."""
         if transaction.sender != self.identifier:
             raise ValueError("solo el emisor puede firmar su propia transacción")
-        content_hash = hashlib.sha256((self.private_key + transaction.signing_payload()).encode()).hexdigest()
-        signature = f"{self.private_key}:{content_hash}"
+        signature = Signature.create(self.private_key, transaction.signing_payload())
         return replace(transaction, signature=signature)
