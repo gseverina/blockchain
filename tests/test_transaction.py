@@ -90,8 +90,13 @@ def test_firma_invalida_no_verifica():
     alice = Wallet(identifier="alice")
     tx = Transaction(sender="alice", recipient="bob", amount=Decimal("10"))
     signed = alice.sign(tx)
-    corrupted = replace(signed, signature="deadbeef")
+    corrupted = replace(signed, signature=replace(signed.signature, content_hash="deadbeef"))
     assert corrupted.verify(alice.public_key) is False
+
+
+def test_signature_de_tipo_invalido_rechazada():
+    with pytest.raises(TypeError):
+        Transaction(sender="alice", recipient="bob", amount=Decimal("10"), signature="no es un Signature")
 
 
 def test_verify_no_modifica_la_transaccion():
